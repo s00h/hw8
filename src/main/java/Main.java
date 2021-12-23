@@ -23,9 +23,13 @@ class Main {
                 .addPathSegment("data")
                 .addPathSegment("2.5")
                 .addPathSegment("weather")
+        //Задаем город
                 .addQueryParameter("q", "Vladivostok")
+        //Выбираем меру измерения (метрическая)
                 .addQueryParameter("units", "metric")
+        //Язык
                 .addQueryParameter("lang", "ru")
+        //Передаем API
                 .addQueryParameter("appid", API_KEY)
                 .build();
 
@@ -36,26 +40,25 @@ class Main {
 
         Response response = okHttpClient.newCall(request).execute();
         String responseJson = response.body().string();
-
+        //Парсим название города
         JsonNode cityNode = objectMapper.readTree(responseJson).at("/name");
         city = cityNode.asText();
-
+        //Парсим дату в UTC
         JsonNode cityDate = objectMapper.readTree(responseJson).at("/dt");
         localDate = cityDate.asText();
-
+        //Описание погоды
         JsonNode cityWeather = objectMapper.readTree(responseJson).at("/weather/0/main");
         weatherText = cityWeather.asText();
-
+        //Температура
         JsonNode cityTemp = objectMapper.readTree(responseJson).at("/main/temp");
         temp = cityTemp.asDouble();
 
-
-        // Заносим в БД
+        // Заносим считанные данные в БД
         Weather weather1 = new Weather(city, localDate, weatherText, temp);
         DbHandler dbHandler = new DbHandler();
         dbHandler.addWeather(weather1);
 
-        //Читаем БД
+        //Читаем и выводим БД в консоль
         System.out.println(dbHandler.selectAllDb());
 
     }
